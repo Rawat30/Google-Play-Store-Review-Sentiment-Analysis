@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block css %}{% endblock %}
+{% block body %}
+<div class="container-fluid vh-100 " >
+    <div class="row">
+        <div class="col-md-2 col-sm-3">
+            <div class="card text-left shadow-0 border-0">
+                <form class="card-body" method="POST">
+                    <h4 class="card-title"><i class="fa fa-home" aria-hidden="true"></i> Menu</h4>
+                    <div class="form-group">
+                        <label for="appname">Select an app</label>
+                        <select class="form-control form-control-sm" name="appname" id="appname">
+                            {% for option in appscore %}
+                            <option value="{{option.Review.app}}">{{option.Review.app}}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-check">
+                          <label class="form-check-label">
+                            <input type="checkbox" class="form-check-input" name="sentiment" id="sentiment" value="checkedValue">
+                            Sentiment graph
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <label class="form-check-label">
+                            <input type="checkbox" class="form-check-input" name="subj" id="subj" value="checkedValue" >
+                            subjectivity graph
+                          </label>
+                        </div>
+                        <div class="form-check">
+                          <label class="form-check-label">
+                            <input type="checkbox" class="form-check-input" name="pol" id="pol" value="checkedValue" >
+                            Polarity graph
+                          </label>
+                        </div>
+                        <div class="form-group py-2">
+                            <button class="btn btn-outline-dark">apply</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="main-area col-md-10 col-sm-9">
+            <table class="table table-striped border table-responsive table-sm">
+                <thead class="thead-default">
+                    {% if appname %}
+                    <tr>
+                        <th colspan="7">Display raw review data : {{appname}}</th>
+                    </tr>                        
+                    {% endif %}
+                    <tr>
+                        <th>app</th>
+                        <th>score</th>
+                        <th>subjectivity</th>
+                        <th>polarity</th>
+                        <th>analysis</th>
+                        <th>Like</th>
+                        <th>review</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in reviewlist%}
+                    <tr>
+                        <td>{{row.app}}</td>
+                        <td>{{row.score}}</td>
+                        <td>{{row.subjectivity}}</td>
+                        <td>{{row.polarity}}</td>
+                        <td>{{row.analysis}}</td>
+                        <td>{{row.thumbsUpCount}}</td>
+                        <td >{{row.content}}</td>
+                    </tr>
+                    {% endfor %}
+                    
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block js %}{% endblock %}

@@ -8,6 +8,10 @@ from database import User, Review
 from sqlalchemy.orm import scoped_session
 from utils import *
 from textblob import TextBlob
+import plotly.express as px
+import plotly
+import json
+import pandas as pd
 
 from flask import  Flask, request,session,flash,redirect,render_template,url_for
 
@@ -45,6 +49,8 @@ def index():
                 flash('Password is invalid','danger')
         else:
             flash("email is invalid",'danger')
+    if session.get('isauth',True):
+        return redirect('/home')
     return render_template('index.html',title='login')
 
 @app.route('/signup',methods=['GET','POST'])
@@ -88,14 +94,34 @@ def home():
     if not session.get('isauth',False):
         return redirect('/')
     db = get_db()
+    fig1 = None
     if request.method == "POST":
         appname = request.form.get('appname')
+        is_senti = request.form.get('sentiment')
+        is_subj = request.form.get('subj')
+        is_pol = request.form.get('pol')
         reviews = db.query(Review).filter(Review.app==appname).all()
+        db.close()    
     else:
         reviews = db.query(Review).all()[:1000]
     apps = db.query(Review, func.sum(Review.score)).group_by(Review.app).all()
     db.close()
-    return render_template('home.html',title='home', reviewlist=reviews,appscore=apps,appname=appname)
+    return render_template('home.html',title='home', reviewlist=reviews,appscore=apps,appname=appname,fig1=fig1)
+
+@app.route('/callback', methods=['POST', 'GET'])
+def cb():
+    return gm(request.args.get('data'))
+
+def gm(appname):
+    db = get_db()
+    rdf = pd.read_sql(db.query(Review).filter(Review.app==appname).statement,create_engine('sqlite:///db.sqlite3'))
+    senti_data = rdf.analysis.value_counts().reset_index()
+    fig =px.pie(senti_data, senti_data.index, senti_data.analysis)
+    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+    print(fig.data[0])
+    #fig.data[0]['staticPlot']=True
+    db.close()
+    return graphJSON
 
 @app.route('/about',methods=['GET','POST'])
 def about():

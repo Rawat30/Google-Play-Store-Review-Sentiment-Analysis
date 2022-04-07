@@ -10,26 +10,26 @@
                     <h4 class="card-title"><i class="fa fa-home" aria-hidden="true"></i> Menu</h4>
                     <div class="form-group">
                         <label for="appname">Select an app</label>
-                        <select class="form-control form-control-sm" name="appname" id="appname">
+                        <select class="form-control form-control-sm" name="appname" id="appname" onchange="cb(this.value)">
                             {% for option in appscore %}
                             <option value="{{option.Review.app}}">{{option.Review.app}}</option>
                             {% endfor %}
                         </select>
                         <div class="form-check">
                           <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" name="sentiment" id="sentiment" value="checkedValue">
+                            <input type="checkbox" class="form-check-input" name="sentiment" id="sentiment" value="True">
                             Sentiment graph
                           </label>
                         </div>
                         <div class="form-check">
                           <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" name="subj" id="subj" value="checkedValue" >
+                            <input type="checkbox" class="form-check-input" name="subj" id="subj" value="True" >
                             subjectivity graph
                           </label>
                         </div>
                         <div class="form-check">
                           <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" name="pol" id="pol" value="checkedValue" >
+                            <input type="checkbox" class="form-check-input" name="pol" id="pol" value="True" >
                             Polarity graph
                           </label>
                         </div>
@@ -74,9 +74,29 @@
                 </tbody>
             </table>
         </div>
+        <div class="graph-area">
+            <div id="chart" class="chart"></div>
+        </div>
     </div>
 </div>
 
 {% endblock %}
 
-{% block js %}{% endblock %}
+{% block js %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    function cb(selection) {
+        $.getJSON({
+            url: "/callback", data: { 'data': selection }, success: function (result) {
+                Plotly.newPlot('chart', result, {staticPlot: true});;
+            }
+        });
+    }
+</script>
+<script>
+    d = {{ graphJSON | safe }};
+    //d.config={staticPlot: true};
+    Plotly.newPlot('chart', d, {});
+</script>
+{% endblock %}

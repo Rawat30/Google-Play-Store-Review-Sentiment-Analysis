@@ -49,7 +49,8 @@ def index():
                 flash('Password is invalid','danger')
         else:
             flash("email is invalid",'danger')
-    if session.get('isauth',True):
+    print(session)
+    if session.get('isauth',False):
         return redirect('/home')
     return render_template('index.html',title='login')
 
@@ -108,18 +109,18 @@ def home():
     db.close()
     return render_template('home.html',title='home', reviewlist=reviews,appscore=apps,appname=appname,fig1=fig1)
 
-@app.route('/callback', methods=['POST', 'GET'])
+@app.route('/callback', methods=['GET','POST'])
 def cb():
-    return gm(request.args.get('data'))
-
-def gm(appname):
+    data =  request.form
+    appname = data.get('appname')
+    pol = data.get('pol')
+    subject = data.get('subject')
+    sentiment = data.get('sentiment')
     db = get_db()
     rdf = pd.read_sql(db.query(Review).filter(Review.app==appname).statement,create_engine('sqlite:///db.sqlite3'))
     senti_data = rdf.analysis.value_counts().reset_index()
     fig =px.pie(senti_data, senti_data.index, senti_data.analysis)
     graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-    print(fig.data[0])
-    #fig.data[0]['staticPlot']=True
     db.close()
     return graphJSON
 
@@ -129,9 +130,9 @@ def about():
 
 @app.route('/logout')
 def logout():
-    if session.get('isauth'):
-        session.clear()
-        flash('you have been logged out','warning')
+
+    session.clear()
+    flash('you have been logged out','warning')
     return redirect('/')
 
 if __name__=="__main__":

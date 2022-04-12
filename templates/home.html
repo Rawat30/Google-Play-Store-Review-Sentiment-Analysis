@@ -6,38 +6,45 @@
     <div class="row">
         <div class="col-md-2 col-sm-3">
             <div class="card text-left shadow-0 border-0">
-                <form class="card-body" method="POST">
+                <form class="card-body" method="POST" id="form1">
                     <h4 class="card-title"><i class="fa fa-home" aria-hidden="true"></i> Menu</h4>
                     <div class="form-group">
                         <label for="appname">Select an app</label>
-                        <select class="form-control form-control-sm" name="appname" id="appname" onchange="cb(this.value)">
+                        <select class="form-control form-control-sm" name="appname" id="appname">
                             {% for option in appscore %}
                             <option value="{{option.Review.app}}">{{option.Review.app}}</option>
                             {% endfor %}
                         </select>
                         <div class="form-check">
                           <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" name="sentiment" id="sentiment" value="True">
+                            <input type="checkbox" class="form-check-input" name="sentiment" id="sentiment" checked>
                             Sentiment graph
                           </label>
                         </div>
                         <div class="form-check">
                           <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" name="subj" id="subj" value="True" >
+                            <input type="checkbox" class="form-check-input" name="subj" id="subj" >
                             subjectivity graph
                           </label>
                         </div>
                         <div class="form-check">
                           <label class="form-check-label">
-                            <input type="checkbox" class="form-check-input" name="pol" id="pol" value="True" >
+                            <input type="checkbox" class="form-check-input" name="pol" id="pol" >
                             Polarity graph
                           </label>
                         </div>
                         <div class="form-group py-2">
-                            <button class="btn btn-outline-dark">apply</button>
+                            <button class="btn btn-outline-dark btnload">Apply</button>
+                        </div>
+                        <div class="form-check">
+                            <label class="show_raw">
+                                <input type="checkbox" class="form-check-input" id="show_raw" value="True" >
+                                Show raw data
+                              </label>
                         </div>
                     </div>
                 </form>
+                
             </div>
         </div>
         <div class="main-area col-md-10 col-sm-9">
@@ -86,17 +93,38 @@
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script>
-    function cb(selection) {
-        $.getJSON({
-            url: "/callback", data: { 'data': selection }, success: function (result) {
-                Plotly.newPlot('chart', result, {staticPlot: true});;
+    $('.table').slideUp()
+    $('#show_raw').change(function(){
+        if(this.checked){
+            $('.table').slideDown('slow')
+        }else{
+            $('.table').slideUp('slow')
+        }
+    });
+
+    $('#form1').on('submit',function(e){
+        e.preventDefault()  
+        $('.btnload').html('<i class="fa fa-spinner fa-spin"></i> Apply')
+        let appname = $('#appname').val();
+        let sentiment =  $('#sentiment').is(':checked');
+        let subj =  $('#subj').is(':checked');
+        let pol =  $('#pol').is(':checked');
+
+        let selection = {
+            'appname':appname,
+            'pol':pol,
+            'subject':subj,
+            'sentiment':sentiment
+        }
+        $.ajax({
+            type: "post",
+            url: "/callback",
+            data: selection,
+            success: function (response) {
+                Plotly.newPlot('chart', response, {staticPlot: true});
+                $('.btnload').html('Apply')               
             }
         });
-    }
-</script>
-<script>
-    d = {{ graphJSON | safe }};
-    //d.config={staticPlot: true};
-    Plotly.newPlot('chart', d, {});
+    })
 </script>
 {% endblock %}

@@ -98,9 +98,6 @@ def home():
     fig1 = None
     if request.method == "POST":
         appname = request.form.get('appname')
-        is_senti = request.form.get('sentiment')
-        is_subj = request.form.get('subj')
-        is_pol = request.form.get('pol')
         reviews = db.query(Review).filter(Review.app==appname).all()
         db.close()    
     else:
@@ -119,7 +116,8 @@ def cb():
     db = get_db()
     rdf = pd.read_sql(db.query(Review).filter(Review.app==appname).statement,create_engine('sqlite:///db.sqlite3'))
     senti_data = rdf.analysis.value_counts().reset_index()
-    fig =px.pie(senti_data, senti_data.index, senti_data.analysis)
+    fig =px.pie(senti_data, senti_data.index, senti_data.analysis,title=f'{appname} sentiment analysis')
+    print(fig)
     graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
     db.close()
     return graphJSON

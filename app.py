@@ -115,12 +115,42 @@ def cb():
     sentiment = data.get('sentiment')
     db = get_db()
     rdf = pd.read_sql(db.query(Review).filter(Review.app==appname).statement,create_engine('sqlite:///db.sqlite3'))
-    senti_data = rdf.analysis.value_counts().reset_index()
-    fig =px.pie(senti_data, senti_data.index, senti_data.analysis,title=f'{appname} sentiment analysis')
-    print(fig)
-    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+    # print(rdf)
+    ctx = {}
+    if sentiment=='true':
+        senti_data = rdf.analysis.value_counts().reset_index()
+        fig =px.pie(senti_data, senti_data['index'], senti_data.analysis,title=f'{appname} sentiment analysis')
+        graphJSON1 = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+        ctx['sentiment'] = graphJSON1
+
+    if pol == 'true':
+        rdfp = rdf.sort_values('polarity').copy()
+        fig =px.area(
+        rdfp, 
+        'userName', 
+        'polarity',
+        color='polarity',
+        title=f'polarity analysis',
+        height=600,
+        )
+        graphJSON2 = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+        ctx['polarity'] = graphJSON2
+
+    if subject == 'true':
+        rdfs = rdf.sort_values('subjectivity').copy()
+        fig =px.histogram(
+            rdfs, 
+            'subjectivity',
+            'userName', 
+            color='subjectivity',
+            title=f'subjectivity analysis',
+            height=600,
+        )
+        graphJSON3 = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+        ctx['subjectivity'] = graphJSON3
+
     db.close()
-    return graphJSON
+    return json.dumps(ctx)
 
 @app.route('/about',methods=['GET','POST'])
 def about():

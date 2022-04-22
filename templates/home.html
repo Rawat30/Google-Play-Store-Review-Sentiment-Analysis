@@ -4,7 +4,7 @@
 {% block body %}
 <div class="container-fluid vh-100 " >
     <div class="row">
-        <div class="col-md-2 col-sm-3">
+        <div class="col-md-4 col-sm-4">
             <div class="card text-left shadow-0 border-0">
                 <form class="card-body" method="POST" id="">
                     <div class="form-group">
@@ -57,7 +57,16 @@
                 
             </div>
         </div>
-        <div class="main-area col-md-10 col-sm-9">
+        <div class="main-area col-md-8 col-sm-6">
+            <div class="graph-area-1">
+                <div id="chart1" class="chart"></div>
+            </div>
+            <div class="graph-area-2">
+                <div id="chart2" class="chart"></div>
+            </div>
+            <div class="graph-area-3">
+                <div id="chart3" class="chart"></div>
+            </div>
             <table class="table table-striped border table-responsive table-sm">
                 <thead class="thead-default">
                     {% if appname %}
@@ -90,9 +99,6 @@
                     
                 </tbody>
             </table>
-        </div>
-        <div class="graph-area">
-            <div id="chart" class="chart"></div>
         </div>
     </div>
 </div>
@@ -131,8 +137,13 @@
             url: "/callback",
             data: selection,
             success: function (response) {
-                console.log(typeof(JSON.parse(response)))
-                Plotly.newPlot('chart', JSON.parse(response), {staticPlot: true});
+                data = JSON.parse(response)
+                console.log(data)
+                // console.log(typeof(data['polarity']))
+                console.log(typeof(data['subjectivity']))
+                Plotly.newPlot('chart1', JSON.parse(data['sentiment']), {staticPlot: true});
+                Plotly.newPlot('chart2', JSON.parse(data['polarity']), {staticPlot: true});
+                Plotly.newPlot('chart3', JSON.parse(data['subjectivity']), {staticPlot: true});
                 $('.btnload').html('Apply')               
             }
         });
